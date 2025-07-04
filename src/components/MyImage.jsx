@@ -1,64 +1,59 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Box } from "@mui/material";
 
 const MyImage = ({ imgs = [{ url: "" }] }) => {
   const [mainImage, setMainImage] = useState(imgs[0]);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2 }}>
-      {/* Thumbnails */}
+    <Box>
+      {/* Main Image Box */}
       <Box
         sx={{
+          width: "100%",
+          height: { xs: "250px", sm: "300px", md: "400px" },
+          borderRadius: 2,
+          overflow: "hidden",
+          mt: 2,
           display: "flex",
-          flexDirection: { xs: "row", md: "column" },
-          gap: 1,
-          justifyContent: "center",
           alignItems: "center",
-        }}
-      >
-        {imgs.map((curElm, index) => (
-          <Box
-            key={index}
-            component="img"
-            src={curElm.url}
-            alt={`thumbnail-${index}`}
-            onClick={() => setMainImage(curElm)}
-            sx={{
-              width: 60,
-              height: 60,
-              objectFit: "cover",
-              cursor: "pointer",
-              borderRadius: 1,
-              border: mainImage.url === curElm.url ? "2px solid #1976d2" : "1px solid #ccc",
-              boxShadow: 2,
-            }}
-          />
-        ))}
-      </Box>
-
-      {/* Main Image */}
-      <Box
-        sx={{
-          flex: 1,
-          display: "flex",
           justifyContent: "center",
-          alignItems: "center",
         }}
       >
         <Box
           component="img"
           src={mainImage.url}
-          alt="main-display"
+          alt="product"
           sx={{
             width: "100%",
-            maxWidth: 500,
-            maxHeight: 400,
-            objectFit: "contain",
-            borderRadius: 2,
-            boxShadow: 4,
+            height: "100%",
+            objectFit: "cover", 
+            display: "block",
           }}
         />
       </Box>
+
+      {/* Thumbnails */}
+      {imgs.length > 1 && (
+        <Box display="flex" gap={2} mt={2}>
+          {imgs.map((img, i) => (
+            <Box
+              component="img"
+              key={i}
+              src={img.url}
+              alt={`thumb-${i}`}
+              onClick={() => setMainImage(img)}
+              sx={{
+                width: "60px",
+                height: "60px",
+                objectFit: "cover",
+                border: mainImage.url === img.url ? "2px solid blue" : "1px solid gray",
+                cursor: "pointer",
+                borderRadius: 1,
+              }}
+            />
+          ))}
+        </Box>
+      )}
     </Box>
   );
 };

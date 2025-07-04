@@ -9,11 +9,17 @@ const Cart = () => {
 
   if(cart.length == 0){
     return (<>
-    <Typography variant="h2" sx={{display: 'flex', justifyContent: 'center'}}> Cart is  Empty</Typography>
-          
-          <NavLink to="/products"><Button variant="contained">
-            <Typography variant="h4">Go Back</Typography></Button>
-            </NavLink>
+    <Box sx={{ textAlign: 'center', mt: 10 }}>
+      <Typography variant="h2" gutterBottom>
+        Cart is Empty
+      </Typography>
+
+      <NavLink to="/products">
+        <Button variant="contained">
+          <Typography variant="h4">Go Shopping</Typography>
+        </Button>
+      </NavLink>
+    </Box>
           </>
   )}
 
@@ -22,7 +28,7 @@ const Cart = () => {
   return (
     <Box sx={{ py: 9 }}>
       <Container maxWidth="lg">
-        <Grid container spacing={13} alignItems="center" textAlign="center">
+        <Grid container spacing={10} alignItems="center" textAlign="center">
           <Grid item xs={3} sm={3} md={3} lg={3}>
             <Typography variant="subtitle1" fontWeight="bold">
               Item
@@ -109,6 +115,9 @@ const Cart = () => {
                 <PriceFormat price={shipping_fee + total_price}/>
               </Typography>
             </Box>
+            <NavLink to="/checkout">
+            <Button variant="contained">CheckOut</Button>
+            </NavLink>
           </Box>
         </Box>
       </Container>

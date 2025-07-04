@@ -35,7 +35,7 @@ const Footer = () => {
               component={NavLink}
               to="/"
               sx={{
-                backgroundColor: 'primary.main',
+                backgroundColor: 'rgb(10, 20, 77)',
                 color: '#fff',
                 '&:hover': { backgroundColor: 'primary.dark' },
               }}

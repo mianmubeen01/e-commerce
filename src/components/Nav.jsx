@@ -1,68 +1,88 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { AppBar,Box,IconButton, Toolbar, Typography, Drawer, List, ListItemButton, ListItemText, Badge, useTheme, useMediaQuery} from '@mui/material';
-import { LuShoppingCart } from "react-icons/lu";
-import { CgClose, CgMenu } from "react-icons/cg";
-import Search from "../components/Search";
+// src/components/NavBar.js
+import { useEffect, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import {
+  AppBar, Box, IconButton, Toolbar, Drawer, List, ListItemButton, ListItemText,
+  Badge, useTheme, useMediaQuery
+} from '@mui/material';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import CloseIcon from '@mui/icons-material/Close';
+import MenuIcon from '@mui/icons-material/Menu';
+import Search from '../components/Search';
 import { useCartContext } from './context/CartContext';
-
-
- 
-const navLinks = [
-  { label: 'Home', path: '/' },
-  { label: 'About', path: '/about' },
-  { label: 'Contact', path: '/contact' },
-  { label: 'Products', path: '/products' },
-];
+import NavLinks, { getNavLinks } from './Nav_Links';
+import APIInstance from '../components/api/api';
 
 const NavBar = () => {
-  const {total_item} = useCartContext();
-
+  const { total_item } = useCartContext();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("access"));
+  const [isAdmin, setIsAdmin] = useState(false);
+  const location = useLocation();
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  useEffect(() => {
+    const updateAuthStatus = async () => {
+      const token = localStorage.getItem("access");
+      setIsAuthenticated(!!token);
+
+      if (token) {
+        try {
+          const res = await APIInstance.get("/me/");
+          setIsAdmin(res.data.is_staff);
+        } catch (err) {
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    updateAuthStatus();
+    window.addEventListener("authChanged", updateAuthStatus);
+    return () => window.removeEventListener("authChanged", updateAuthStatus);
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    window.dispatchEvent(new Event("authChanged"));
+    window.location.replace("/login");
+  };
+
+  //  Reuse same function to get drawer links
+  const drawerLinks = getNavLinks(isAuthenticated, isAdmin);
+
   const drawer = (
-    <Box
-      sx={{
-        width: 250,
-        height: '100%',
-        bgcolor: 'background.paper',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-      }}
-      role="presentation"
-      onClick={handleDrawerToggle}
-    >
-      <IconButton sx={{ alignSelf: 'flex-end', m: 2 }}>
-        <CgClose size={32} />
+    <Box sx={{ width: 200, bgcolor: 'background.paper', p: 2 }}>
+      <IconButton onClick={handleDrawerToggle}>
+        <CloseIcon />
       </IconButton>
       <List>
-        {navLinks.map((item) => (
-          <ListItemButton
-            key={item.label}
-            component={NavLink}
-            to={item.path}
-            sx={{ justifyContent: 'center' }}
-          >
-            <ListItemText
-              primary={item.label}
-              primaryTypographyProps={{
-                fontSize: 20,
-                textAlign: 'center',
-                textTransform: 'uppercase',
-              }}
-            />
-          </ListItemButton>
-        ))}
-        <ListItemButton component={NavLink} to="/cart" sx={{ justifyContent: 'center' }}>
-          <Badge badgeContent={10} color="secondary">
-            <LuShoppingCart size={28} />
+        {drawerLinks.map((link) =>
+          link.label === 'Logout' ? (
+            <ListItemButton key={link.label} onClick={handleLogout}>
+              <ListItemText primary={link.label} />
+            </ListItemButton>
+          ) : (
+            <ListItemButton
+              key={link.label}
+              component={NavLink}
+              to={link.path}
+            >
+              <ListItemText primary={link.label} />
+            </ListItemButton>
+          )
+        )}
+        <ListItemButton component={NavLink} to="/cart">
+          <Badge badgeContent={total_item} color="secondary">
+            <ShoppingCartIcon />
           </Badge>
         </ListItemButton>
       </List>
@@ -72,54 +92,35 @@ const NavBar = () => {
   return (
     <>
       <AppBar position="static" color="transparent" elevation={0}>
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          {/* Left: Logo */}
+        <Toolbar sx={{ justifyContent: 'space-between', minHeight: { xs: 50, md: 56 }, }}>
           <NavLink to="/">
-            <img src="/images/logo.avif" alt="Logo" style={{ height: 80, width: 150 }} />
+            <img src="/images/logo.png" alt="Logo" style={{ height: 130, width: 150 }} />
           </NavLink>
-          {/* ✅ Add Search Bar Here */}
-          <Box sx={{ flexGrow: 1, maxWidth: 400, mt:2.3 }}>
+
+        {location.pathname === "/products" && (
+          <Box sx={{ flexGrow: 1, maxWidth: 400, mt: 1, pl:8, }}>
             <Search />
           </Box>
+        )}
+          
 
-
-          {/* Right: Navigation */}
           {!isMobile ? (
-            <Box sx={{ display: 'flex', gap: 4 }}>
-              {navLinks.map((item) => (
-                <Typography
-                  key={item.label}
-                  component={NavLink}
-                  to={item.path}
-                  sx={{
-                    color: 'black',
-                    fontWeight: 500,
-                    fontSize: '1.1rem',
-                    textDecoration: 'none',
-                    textTransform: 'uppercase',
-                    '&:hover': {
-                      color: theme.palette.primary.main,
-                    },
-                  }}
-                >
-                  {item.label}
-                </Typography>
-              ))}
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <NavLinks isAuthenticated={isAuthenticated} isAdmin={isAdmin} handleLogout={handleLogout} />
               <NavLink to="/cart" style={{ color: 'black' }}>
                 <Badge badgeContent={total_item} color="primary">
-                  <LuShoppingCart size={28} />
+                  <ShoppingCartIcon />
                 </Badge>
               </NavLink>
             </Box>
           ) : (
             <IconButton onClick={handleDrawerToggle}>
-              <CgMenu size={32} />
+              <MenuIcon />
             </IconButton>
           )}
         </Toolbar>
       </AppBar>
 
-      {/* Drawer for mobile view */}
       <Drawer
         anchor="right"
         open={mobileOpen}

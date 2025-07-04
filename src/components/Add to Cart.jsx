@@ -1,16 +1,18 @@
+// UPDATED: AddToCart.jsx
 import { useState } from "react";
-import { Box, Button, Typography, IconButton } from "@mui/material";
-import CheckIcon from "@mui/icons-material/Check";
-import CartAmountToggle from "./CartAmountToggle"; // Make sure this exists
-import { NavLink } from "react-router-dom";
-import { useCartContext } from "./context/CartContext";
+import { Box, Button } from "@mui/material";
+import CartAmountToggle from "./CartAmountToggle";
+import { useNavigate } from "react-router-dom";
+import APIInstance from "./api/api";
+import { useCartContext } from "./context/CartContext"; 
 
-const ColorSelect = ({ product }) => {
-  const {addtoCart } = useCartContext();
+const AddToCart = ({ product }) => {
+  const { id, stock } = product;
 
-  const { id, colors, stock } = product;
-  const [color, setColor] = useState(colors[0]);
   const [amount, setAmount] = useState(1);
+  const navigate = useNavigate();
+
+  const { fetchCartFromBackend } = useCartContext(); 
 
   const setDecrease = () => {
     setAmount((prev) => (prev > 1 ? prev - 1 : 1));
@@ -20,45 +22,47 @@ const ColorSelect = ({ product }) => {
     setAmount((prev) => (prev < stock ? prev + 1 : stock));
   };
 
+  const handleAddToCart = async () => {
+    try {
+      await APIInstance.post("cart/add_item/", {
+        product_id: id,
+        quantity: amount,
+      });
+
+      await fetchCartFromBackend(); //  Sync with backend immediately
+      navigate("/cart"); 
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Failed to add item to cart. Please login again.");
+    }
+  };
+
   return (
     <Box sx={{ mt: 2 }}>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <Typography variant="subtitle1" sx={{ mr: 1 }}>
-          Color:
-        </Typography>
-        {colors.map((curColor, index) => (
-          <IconButton
-            key={index}
-            onClick={() => setColor(curColor)}
-            sx={{
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              backgroundColor: curColor,
-              opacity: color === curColor ? 1 : 0.5,
-              border: color === curColor ? "2px solid black" : "none",
-              "&:hover": {
-                opacity: 1,
-              },
-            }}
-          >
-            {color === curColor && (
-              <CheckIcon sx={{ fontSize: 16, color: "#fff" }} />
-            )}
-          </IconButton>
-        ))}
-      </Box>
-
       <CartAmountToggle
         amount={amount}
         setDecrease={setDecrease}
         setIncrease={setIncrease}
       />
-        <Button component={NavLink} to="/cart" variant="contained" color="primary" onClick={()=> addtoCart(id, color, amount,product)}>
-            Add To Cart
-        </Button>
+
+      <Button
+        variant="contained"
+        onClick={handleAddToCart}
+        sx={{
+          backgroundColor: "rgb(33, 6, 88)",
+          color: "white",
+          textTransform: "uppercase",
+          fontWeight: 600,
+          '&:hover': {
+            backgroundImage:
+              "linear-gradient(to right,rgb(28, 36, 187),rgb(21, 28, 72))",
+          },
+        }}
+      >
+        Add To Cart
+      </Button>
     </Box>
   );
 };
 
-export default ColorSelect;
+export default AddToCart;

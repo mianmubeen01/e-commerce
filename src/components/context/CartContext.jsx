@@ -1,68 +1,108 @@
-import { createContext, useReducer, useContext, useEffect } from 'react';
-import reducer from '../reducer/CartReducer';
+// src/context/CartContext.jsx
+import { createContext, useReducer, useContext, useEffect } from "react";
+import reducer from "../reducer/CartReducer";
+import APIInstance from "../api/api";
 
 const CartContext = createContext();
-// const getLocalStorage = () => {
-//   try {
-//     const data = localStorage.getItem("holdCart");
-//     const parsedData = JSON.parse(data);
-//     return Array.isArray(parsedData) ? parsedData : [];
-//   } catch (error) {
-//     return [];
-//   }
-// };
 
 const initialState = {
-    cart: [],
-    // cart: getLocalStorage(),
-    total_item: "",
-    total_price: "",
-    shipping_fee: 20000
+  cart: [],
+  total_item: "",
+  total_price: "",
+  shipping_fee: 500,
 };
 
-const CartProvider = ({children}) => {
-    const [state, dispatch] = useReducer(reducer, initialState);
-// add to  cart
-    const addtoCart = (id, color, amount, product) =>{
-        dispatch({type: 'ADD_TO_CART', payload: { id, color, amount, product}})
-    };
-// remove cart item
-    const removeItem = (id) =>{
-        dispatch({type: 'REMOVE_ITEM', payload: id})
-    }
-    // SET DECREASE
-    const setDecrease = (id) =>{
-        dispatch({type: 'DECREASE_ITEM', payload: id})
-    }
-    // SET INCREASE
-    const setIncrease = (id) =>{
-        dispatch({type: 'INCREASE_ITEM', payload: id})
-    }
-    // add cart into local storage
-    useEffect(() =>{
-        dispatch({type: 'CART_TOTAL_ON_ICON'}),
-        dispatch({type: 'CART_TOTAL_PRICE'})
-        // localStorage.setItem('holdCart', JSON.stringify(state.cart))
-    },[state.cart]);
+const CartProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-    // For updata cart icon on Nav
-    // useEffect(() =>{
-    //     dispatch({type: "CART_TOTAL-ON-ICON "})
-    // }, [])
+  //  Add to cart (frontend only for now)
+  const addtoCart = (id, amount, product) => {
+    dispatch({ type: "ADD_TO_CART", payload: { id, amount, product } });
+  };
 
-    // Clear Cart
-    const clearCart = () =>{
-        dispatch({type: 'CLEAR_CART'})
+  //  Remove item (with backend sync)
+  const removeItem = async (id) => {
+    try {
+      await APIInstance.post("cart/remove_item/", { product_id: id });
+      await fetchCartFromBackend();
+    } catch (error) {
+      console.error("❌ Failed to remove item:", error.response?.data || error.message);
     }
+  };
+
+  //  Decrease quantity
+  const setDecrease = (id) => {
+    dispatch({ type: "DECREASE_ITEM", payload: id });
+  };
+
+  //  Increase quantity
+  const setIncrease = (id) => {
+    dispatch({ type: "INCREASE_ITEM", payload: id });
+  };
+
+  //  Clear cart (with backend sync)
+  useEffect(()=>{})
+  const clearCart = async () => {
+    try {
+      await APIInstance.post("cart/clear_cart/");
+      await fetchCartFromBackend();
+    } catch (error) {
+      console.error(" Failed to clear cart:", error.response?.data || error.message);
+    }
+  };
+
+  // Clear cart state (frontend only)
+  const clearCartState = () => {
+    dispatch({ type: "CLEAR_CART" });
+  };
+
+  //  Fetch cart from backend
+  const fetchCartFromBackend = async () => {
+    try {
+      const res = await APIInstance.get("cart/");
+      const items = res.data.items.map((item) => ({
+        id: item.product.id,
+        amount: item.quantity,
+        price: item.product.price,
+        max: item.product.stock,
+        image: `http://localhost:8000${item.product.image}`,
+      }));
+
+      dispatch({ type: "SET_CART_FROM_BACKEND", payload: items });
+    } catch (err) {
+      console.error(" Failed to load cart:", err.response?.data || err.message);
+    }
+  };
+
+  // On first load
+  useEffect(() => {
+    fetchCartFromBackend();
+  }, []);
+
+  //  Update totals whenever cart changes
+  useEffect(() => {
+    dispatch({ type: "CART_TOTAL_ON_ICON" });
+    dispatch({ type: "CART_TOTAL_PRICE" });
+  }, [state.cart]);
+
   return (
-    <CartContext.Provider value={{...state, addtoCart, removeItem, clearCart, setDecrease, setIncrease}}>
-        {children}
+    <CartContext.Provider
+      value={{
+        ...state,
+        addtoCart,
+        removeItem,
+        clearCart,
+        setDecrease,
+        setIncrease,
+        fetchCartFromBackend, // optional if needed elsewhere
+        clearCartState, // new function to clear cart state
+      }}
+    >
+      {children}
     </CartContext.Provider>
-  )
+  );
 };
 
-const useCartContext = ()=>{
-    return useContext(CartContext);
-}
+const useCartContext = () => useContext(CartContext);
 
-export {CartProvider, useCartContext};
+export { CartProvider, useCartContext };

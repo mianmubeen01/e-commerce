@@ -1,27 +1,80 @@
-import { Box, Typography, Grid, IconButton } from "@mui/material";
+import { Box, Typography, Grid, IconButton, useMediaQuery, useTheme, Stack} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CartAmountToggle from "./CartAmountToggle";
 import PriceFormat from "./Helper/PriceFormat";
 import { useCartContext } from "./context/CartContext";
 
-const CartItems = ({ id, name, image, price, color, amount }) => {
-    const {removeItem, setDecrease, setIncrease} = useCartContext();
+const CartItems = ({ id, name, image, price, amount }) => {
+  const { removeItem, setDecrease, setIncrease } = useCartContext();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-
-  return (
-    <Grid
-      container
-      spacing={7}
-      alignItems="center"
+  return isMobile ? (
+    <Box
       sx={{
-        borderBottom: "1px solid #ddd",
-        py: 2,
-        textAlign: "center",
+        mb: 3,
+        p: 2,
+        border: "1px solid #ddd",
+        borderRadius: 2,
+        backgroundColor: "#fafafa",
       }}
     >
-      {/* Item (image + name + color) */}
-      <Grid item xs={12} sm={3}>
-        <Box display="flex" alignItems="center" gap={2} sx={{ml: -7}}>
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Box
+          component="img"
+          src={image}
+          alt={name}
+          sx={{
+            width: 60,
+            height: 60,
+            objectFit: "contain",
+            border: "1px solid #eee",
+            borderRadius: 1,
+            backgroundColor: "#fff",
+          }}
+        />
+        <Typography fontWeight="bold">{name}</Typography>
+      </Stack>
+
+      <Box mt={2}>
+        {/* <Typography variant="body2" color="text.secondary">Price</Typography> */}
+        <Typography fontWeight="bold">
+          <PriceFormat price={price} />
+        </Typography>
+      </Box>
+
+      <Box mt={2}>
+        {/* <Typography variant="body2" color="text.secondary">Quantity</Typography> */}
+        <CartAmountToggle
+          amount={amount}
+          setDecrease={() => setDecrease(id)}
+          setIncrease={() => setIncrease(id)}
+        />
+      </Box>
+
+      <Box mt={2}>
+        <Typography variant="body2" color="text.secondary">Subtotal</Typography>
+        <Typography fontWeight="bold">
+          <PriceFormat price={price * amount} />
+        </Typography>
+      </Box>
+
+      <Box mt={2}>
+        <Typography variant="body2" color="text.secondary">Remove</Typography>
+        <IconButton onClick={() => removeItem(id)} sx={{ color: "red" }}>
+          <DeleteIcon />
+        </IconButton>
+      </Box>
+    </Box>
+  ) : (
+    <Grid
+      container
+      spacing={3}
+      alignItems="center"
+      sx={{ borderBottom: "1px solid #ddd", py: 2, textAlign: "center" }}
+    >
+      <Grid item sm={3}>
+        <Box display="flex" alignItems="center" gap={4}>
           <Box
             component="img"
             src={image}
@@ -37,49 +90,29 @@ const CartItems = ({ id, name, image, price, color, amount }) => {
           />
           <Box textAlign="left">
             <Typography fontWeight="bold">{name}</Typography>
-            <Box display="flex" alignItems="center" gap={1} sx={{mt: 4, ml:-2.2}}>
-              <Typography variant="body2">Color:</Typography>
-              <Box
-                sx={{
-                  width: 15,
-                  height: 15,
-                  borderRadius: "50%",
-                  backgroundColor: color,
-                  border: "1px solid #00000030",
-                }}
-              />
-            </Box>
           </Box>
         </Box>
       </Grid>
 
-      {/* Price */}
-      <Grid item xs={6} sm={2}>
-        <Typography>
-          <PriceFormat price={price} />
-        </Typography>
+      <Grid item sm={2}>
+        <Typography><PriceFormat price={price} /></Typography>
       </Grid>
 
-      {/* Quantity */}
-      <Grid item xs={6} sm={2} sx={{ ml: -3}}>
+      <Grid item sm={2}>
         <CartAmountToggle
           amount={amount}
-          setDecrease={()=>setDecrease(id)}
-          setIncrease={()=>setIncrease(id)}
+          setDecrease={() => setDecrease(id)}
+          setIncrease={() => setIncrease(id)}
         />
       </Grid>
 
-      {/* Subtotal */}
-      <Grid item xs={6} sm={3}>
-        <Typography>
-          <PriceFormat price={price * amount} />
-        </Typography>
+      <Grid item sm={3}>
+        <Typography><PriceFormat price={price * amount} /></Typography>
       </Grid>
 
-      {/* Remove Icon */}
-      <Grid item xs={6} sm={2}>
-        <IconButton sx={{ color: "red", ml: 6}}>
-          <DeleteIcon  onClick={()=> removeItem(id)}/>
+      <Grid item sm={2}>
+        <IconButton sx={{ color: "red" }} onClick={() => removeItem(id)}>
+          <DeleteIcon />
         </IconButton>
       </Grid>
     </Grid>
