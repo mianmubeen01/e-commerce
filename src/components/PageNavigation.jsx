@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
+import { Box, Breadcrumbs, Typography, Link, useTheme, useMediaQuery } from "@mui/material";
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 const PageNavigation = ({ title }) => {
   const theme = useTheme();
@@ -8,35 +9,44 @@ const PageNavigation = ({ title }) => {
   return (
     <Box
       sx={{
-        height: isMobile ? "6rem" : "10rem",
         backgroundColor: theme.palette.background.default,
-        display: "flex",
-        alignItems: "center",
-        paddingLeft: isMobile ? "0.8rem" : "1.2rem",
-        fontSize: isMobile ? "2rem" : "3.2rem",
+        py: isMobile ? 2 : 4,
+        px: isMobile ? 2 : 6,
       }}
     >
-      <Typography
-        component={NavLink}
-        to="/"
+      <Breadcrumbs
+        separator={<NavigateNextIcon fontSize="small" />}
+        aria-label="breadcrumb"
         sx={{
-          fontSize: isMobile ? "2rem" : "3.2rem",
-          textDecoration: "none",
-          color: theme.palette.text.primary,
-          marginRight: "0.5rem",
+          fontSize: isMobile ? "1.2rem" : "1.4rem",
+          fontWeight: 500,
         }}
       >
-        Home
-      </Typography>
-      /
-      <Typography
-        sx={{
-          fontSize: isMobile ? "2rem" : "3.2rem",
-          marginLeft: "0.5rem",
-        }}
-      >
-        {title}
-      </Typography>
+        <Link
+          component={NavLink}
+          to="/"
+          underline="hover"
+          sx={{
+            color: theme.palette.primary.main,
+            fontWeight: 600,
+            '&:hover': {
+              color: theme.palette.primary.dark,
+            },
+          }}
+        >
+          Home
+        </Link>
+
+        <Typography
+          color="text.primary"
+          sx={{
+            textTransform: 'capitalize',
+            fontWeight: 600,
+          }}
+        >
+          {title}
+        </Typography>
+      </Breadcrumbs>
     </Box>
   );
 };

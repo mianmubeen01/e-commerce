@@ -1,59 +1,150 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
+import React, { use } from "react";
 import {
-  Card,
-  CardActionArea,
-  CardContent,
-  CardMedia,
-  Typography,
-  Box,
+Card,
+CardMedia,
+CardContent,
+Typography,
+Button,
+Box,
 } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
 import PriceFormat from "./Helper/PriceFormat";
+import APIInstance from "./api/api";
+import { useAuth } from "./context/AuthContext";
 
-const Product = ({ id, name, image, price, category }) => {
-  return (
-    <NavLink to={`/singlepage/${id}`} style={{ textDecoration: "none" }}>
-      <Card sx={{maxWidth: 345,
-          borderRadius: 3,
-          boxShadow: 3,
-          mx: "auto",
-          transition: "transform 0.3s ease, box-shadow 0.3s ease",
-          '&:hover': {
-            transform: "scale(1.03)",
-            boxShadow: 6,} }}>
 
-        <CardActionArea>
-          <CardMedia
-            component="img"
-            height="200"
-            image={image}
-            alt={name}
-            sx={{ objectFit: "cover",  transition: "transform 0.3s ease",
-              '&:hover': {
-                transform: "scale(1.05)",
-              }, }}
-          />
-          <CardContent>
-            <Typography
-              variant="subtitle2"
-              color="text.secondary"
-              gutterBottom
-            >
-              {category}
-            </Typography>
-            <Box display="flex" justifyContent="space-between">
-              <Typography variant="h6" component="div">
-                {name}
-              </Typography>
-              <Typography variant="body1" color="primary">
-                <PriceFormat price={price} />
-              </Typography>
-            </Box>
-          </CardContent>
-        </CardActionArea>
-      </Card>
-    </NavLink>
-  );
+const Product = ({ id, name, image, price }) => {
+const { user } = useAuth(); // Get user role
+console.log(user)
+const navigate = useNavigate();
+
+const handleDelete = async (productId) => {
+  if (!window.confirm("Are you sure you want to delete this product?")) return;
+  try {
+    await APIInstance.delete(`/products/${productId}/`);
+    alert("Product deleted successfully!");
+    navigate("/products");
+  } catch (err) {
+    console.error("Delete failed:", err);
+    alert("Failed to delete product.");
+  }
+};
+
+return (
+  <Card
+    sx={{
+      height: "100%",
+      width: "250px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      backgroundColor: "#fff",
+      borderRadius: "20px",
+      boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+      transition: "all 0.3s ease",
+      "&:hover": {
+        boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+        transform: "translateY(-4px)",
+      },
+    }}
+  >
+    {/* Image Section */}
+    <Box
+      sx={{
+        height: "200px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "1rem",
+      }}
+    >
+      <CardMedia
+        component="img"
+        image={image}
+        alt={name}
+        sx={{
+          maxHeight: "100%",
+          maxWidth: "100%",
+          objectFit: "contain",
+        }}
+      />
+    </Box>
+
+    {/* Content Section */}
+    <CardContent
+      sx={{
+        flexGrow: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        padding: "1rem",
+      }}
+    >
+      <Typography
+        variant="subtitle1"
+        sx={{
+          fontWeight: 500,
+          fontSize: "1rem",
+          textTransform: "capitalize",
+          mb: 1,
+        }}
+        noWrap
+        title={name}
+      >
+        {name}
+      </Typography>
+
+      <Typography
+        variant="h6"
+        sx={{ color: "#B12704", fontWeight: 700, mb: 2 }}
+      >
+        <PriceFormat price={price} />
+      </Typography>
+
+      <Button
+        variant="contained"
+        component={Link}
+        to={`/singlepage/${id}`}
+        fullWidth
+        sx={{
+          backgroundColor: "rgb(104, 118, 223)",
+          color: "#fff",
+          fontWeight: 600,
+          borderRadius: "6px",
+          "&:hover": {
+            backgroundColor: "#F7CA00",
+            color: "#111",
+          },
+        }}
+      >
+        View Details
+      </Button>
+
+      {/* Admin Only: Edit/Delete Buttons */}
+      {user && user.is_staff && (
+        <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+          <Button
+            component={Link}
+            to={`/edit-product/${id}`}
+            variant="outlined"
+            color="primary"
+            fullWidth
+          >
+            Edit
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => handleDelete(id)}
+            fullWidth
+          >
+            Delete
+          </Button>
+        </Box>
+      )}
+    </CardContent>
+  </Card>
+);
 };
 
 export default Product;

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import {Box, Typography, Grid, Container, CircularProgress, Divider,} from '@mui/material';
+import { Box, Typography, Grid, Container, CircularProgress, Divider } from '@mui/material';
 
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
@@ -10,16 +10,17 @@ import { useProductContext } from '../components/context/ProductContext';
 import PageNavigation from '../components/PageNavigation';
 import MyImage from '../components/MyImage';
 import PriceFormat from '../components/Helper/PriceFormat';
-import ColorSelect from '../components/Add to Cart';
+import AddtoCart from '../components/Add to Cart';
+import Stars from '../components/Stars';
 
-const API = "https://api.pujakaitem.com/api/products";
+const API = "http://localhost:8000/api/products/";
 
 function SinglePage() {
   const { getSingleProduct, isSingleLoading, singleProduct } = useProductContext();
   const { id } = useParams();
 
   useEffect(() => {
-    getSingleProduct(`${API}?id=${id}`);
+    getSingleProduct(`${API}${id}`);
   }, [id]);
 
   if (isSingleLoading) {
@@ -46,11 +47,10 @@ function SinglePage() {
     <Box sx={{ py: 6 }}>
       <PageNavigation title={name} />
       <Container maxWidth="lg">
-        {/* Layout as horizontal - main */}
         <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 4 }}>
           {/* Left Side: Image */}
-          <Box sx={{ flex: 1 }}>
-            <MyImage imgs={image} />
+          <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+            <MyImage imgs={[{ url: image }]} />
           </Box>
 
           {/* Right Side: Product Detail */}
@@ -60,15 +60,15 @@ function SinglePage() {
             </Typography>
 
             <Typography variant="body2" sx={{ mb: 1 }}>
-              ⭐ {stars} ({reviews} reviews)
+              <Stars stars={stars} reviews={reviews} />
             </Typography>
 
             <Typography variant="body1" sx={{ textDecoration: "line-through", color: "gray" }}>
-              MRP: <PriceFormat price={price + 250000} />
+              MRP: <PriceFormat price={price*1.1} />
             </Typography>
 
             <Typography variant="h6" color="primary" sx={{ mb: 2 }}>
-              Deal of the Day: <PriceFormat price={price} />
+              Deal of the Day: {price} 
             </Typography>
 
             <Typography variant="body1" sx={{ mb: 3 }}>
@@ -111,7 +111,7 @@ function SinglePage() {
             <Typography variant="body2">Brand: <strong>{company}</strong></Typography>
             <Typography variant="body2">Category: <strong>{category}</strong></Typography>
             <hr />
-            {stock > 0 && <ColorSelect product={singleProduct} />}
+            {stock > 0 && <AddtoCart product={singleProduct} />}
           </Box>
         </Box>
       </Container>

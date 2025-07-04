@@ -9,13 +9,27 @@ import SinglePage from './Pages/SinglePage';
 import Errors from './Pages/Errors';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import AddProduct from './Pages/AddProduct';
+import Signup from './components/Registeration/SignUp';
+import Login from './components/Registeration/Login';
+import Logout from './components/Registeration/LogOut';
+import Checkout from './Pages/CheckOut';
+import AdminOrders from './components/orders/AdminOrder';
+import Success from "./Pages/Success";
+import EditOrder from './components/EditOrder';
+import EditProduct from './components/EditProduct';
+import ProtectAdminRoute from './components/ProtectAdminRoute';
+import ForgotPassword from './components/Registeration/ForgotPassword';
+import ResetPassword from './components/Registeration/ResetPassword';
+import VerifyOtp from './components/Registeration/verifyOTP';
+
 
 
 function App() {
   const theme = createTheme({
     palette: {
       background: {
-        default: "#f5f5f5",
+        default: "rgba(190, 236, 247, 0.41)",
       },
       primary: {
         main: "#8490ff",
@@ -68,6 +82,29 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/singlepage/:id" element={<SinglePage />} />
           <Route path="*" element={<Errors />} />
+          
+          <Route path='/signup' element={<Signup/>}/>
+          <Route path='/login' element={<Login/>}/>
+          <Route path='logout' element={<Logout/>}/>
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+
+          <Route path='checkout/' element={<Checkout/>}/>
+          <Route path="/success" element={<Success />} />
+          <Route path='/admin-order' element={<ProtectAdminRoute>
+            <AdminOrders/>
+            </ProtectAdminRoute>}/>
+          <Route path="/add-product" element={<ProtectAdminRoute>
+            <AddProduct />
+            </ProtectAdminRoute>} />
+          <Route path="/admin/orders/:id/edit" element={<ProtectAdminRoute>
+            <EditOrder />
+            </ProtectAdminRoute>} />
+          <Route path="/edit-product/:id" element={<ProtectAdminRoute>
+            <EditProduct />
+            </ProtectAdminRoute>} />
         </Routes>
         <Footer />
       </Router>

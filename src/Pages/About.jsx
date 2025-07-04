@@ -12,9 +12,7 @@ function About() {
     <>
       <HeroSection myData={data} />
 
-      {/* Optional: just for debugging - shows number of products */}
-      <p>Total Products: {products.length}</p>
-      <p>Featured Products: {featuredProducts.length}</p>
+    
     </>
   );
 }

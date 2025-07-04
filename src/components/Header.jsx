@@ -8,9 +8,9 @@ function Header() {
       position="static"
       elevation={0}
       sx={{
-        backgroundColor: "#f5f5f5", // theme.colors.bg equivalent
+        backgroundColor: "white",
         paddingX: "4.8rem",
-        height: "10rem",
+        height: "5rem",
         justifyContent: "center",
       }}
     >
@@ -26,7 +26,7 @@ function Header() {
         <Box component={NavLink} to="/" sx={{ display: "block" }}>
           <Box
             component="img"
-            src="/images/logo.avif"
+            src="/images/logo.png"
             alt="logo image"
             sx={{
               height: "7.5rem",
@@ -38,6 +38,7 @@ function Header() {
 
         <NavBar />
       </Toolbar>
+      <hr/>
     </AppBar>
   );
 }
