@@ -23,11 +23,11 @@ const Login = () => {
       const res = await APIInstance.post('login/', form);
       localStorage.setItem('access', res.data.access);
       localStorage.setItem('refresh', res.data.refresh);
-      await fetchUser();
+      await fetchUser()
       await fetchCartFromBackend();
       window.dispatchEvent(new Event('authChanged'));
       setForm({ username: '', password: '' });
-      window.location.href = '/';
+      navigate('/');
     } catch (err) {
       alert('Login failed');
     }
